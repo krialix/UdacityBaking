@@ -10,10 +10,10 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context=".recipelist.RecipeListActivity">
+    tools:context=".features.recipelist.RecipeListActivity">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recipe_list"
+        android:id="@+id/rv_recipe_list"
         android:layout_width="@dimen/item_width"
         android:layout_height="match_parent"
         android:layout_marginLeft="16dp"

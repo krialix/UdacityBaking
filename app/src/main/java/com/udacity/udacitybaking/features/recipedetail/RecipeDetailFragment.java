@@ -1,4 +1,4 @@
-package com.udacity.udacitybaking.recipedetail;
+package com.udacity.udacitybaking.features.recipedetail;
 
 import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.udacity.udacitybaking.R;
 import com.udacity.udacitybaking.dummy.DummyContent;
-import com.udacity.udacitybaking.recipelist.RecipeListActivity;
+import com.udacity.udacitybaking.features.recipelist.RecipeListActivity;
 
 /**
  * A fragment representing a single Recipe detail screen.

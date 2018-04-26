@@ -3,6 +3,7 @@ package com.udacity.udacitybaking.model;
 import com.squareup.moshi.Json;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Recipe {
 
@@ -94,5 +95,23 @@ public class Recipe {
         + steps
         + '\''
         + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Recipe recipe = (Recipe) o;
+    return servings == recipe.servings
+        && id == recipe.id
+        && Objects.equals(image, recipe.image)
+        && Objects.equals(name, recipe.name)
+        && Objects.equals(ingredients, recipe.ingredients)
+        && Objects.equals(steps, recipe.steps);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(image, servings, name, ingredients, id, steps);
   }
 }

@@ -3,4 +3,20 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="tint">#803F51B5</color>
+
+    <color name="color1">#247BA0</color>
+    <color name="color2">#70C1B3</color>
+    <color name="color3">#B2DBBF</color>
+    <color name="color4">#8D99AE</color>
+    <color name="color5">#FF1654</color>
+
+    <integer-array name="palette">
+        <item>@color/color1</item>
+        <item>@color/color2</item>
+        <item>@color/color3</item>
+        <item>@color/color4</item>
+        <item>@color/color5</item>
+    </integer-array>
 </resources>

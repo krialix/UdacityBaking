@@ -3,10 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rv_recipe_list"
+    android:name="com.udacity.udacitybaking.RecipeListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="4dp"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    app:layoutManager="LinearLayoutManager"
     tools:context=".features.recipelist.RecipeListActivity"
-    tools:listitem="@layout/recipe_list_content"
-    tools:showIn="@layout/activity_recipe_list" />
+    tools:listitem="@layout/recipe_list_content" />

@@ -5,7 +5,7 @@ import com.squareup.moshi.Json;
 public class Ingredients {
 
   @Json(name = "quantity")
-  private int quantity;
+  private float quantity;
 
   @Json(name = "measure")
   private String measure;
@@ -13,11 +13,11 @@ public class Ingredients {
   @Json(name = "ingredient")
   private String ingredient;
 
-  public int getQuantity() {
+  public float getQuantity() {
     return quantity;
   }
 
-  public void setQuantity(int quantity) {
+  public void setQuantity(float quantity) {
     this.quantity = quantity;
   }
 
