@@ -1,29 +1,51 @@
 package com.udacity.udacitybaking.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.squareup.moshi.Json;
 
 import java.util.List;
 import java.util.Objects;
 
-public class Recipe {
+public class Recipe implements Parcelable {
+
+  public static final Parcelable.Creator<Recipe> CREATOR =
+      new Parcelable.Creator<Recipe>() {
+        @Override
+        public Recipe createFromParcel(Parcel source) {
+          return new Recipe(source);
+        }
+
+        @Override
+        public Recipe[] newArray(int size) {
+          return new Recipe[size];
+        }
+      };
 
   @Json(name = "image")
   private String image;
-
   @Json(name = "servings")
   private int servings;
-
   @Json(name = "name")
   private String name;
-
   @Json(name = "ingredients")
-  private List<Ingredients> ingredients;
-
+  private List<Ingredient> ingredients;
   @Json(name = "id")
   private int id;
-
   @Json(name = "steps")
-  private List<Steps> steps;
+  private List<Step> steps;
+
+  public Recipe() {}
+
+  protected Recipe(Parcel in) {
+    this.image = in.readString();
+    this.servings = in.readInt();
+    this.name = in.readString();
+    this.ingredients = in.createTypedArrayList(Ingredient.CREATOR);
+    this.id = in.readInt();
+    this.steps = in.createTypedArrayList(Step.CREATOR);
+  }
 
   public String getImage() {
     return image;
@@ -49,11 +71,11 @@ public class Recipe {
     this.name = name;
   }
 
-  public List<Ingredients> getIngredients() {
+  public List<Ingredient> getIngredients() {
     return ingredients;
   }
 
-  public void setIngredients(List<Ingredients> ingredients) {
+  public void setIngredients(List<Ingredient> ingredients) {
     this.ingredients = ingredients;
   }
 
@@ -65,11 +87,11 @@ public class Recipe {
     this.id = id;
   }
 
-  public List<Steps> getSteps() {
+  public List<Step> getSteps() {
     return steps;
   }
 
-  public void setSteps(List<Steps> steps) {
+  public void setSteps(List<Step> steps) {
     this.steps = steps;
   }
 
@@ -113,5 +135,20 @@ public class Recipe {
   @Override
   public int hashCode() {
     return Objects.hash(image, servings, name, ingredients, id, steps);
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeString(this.image);
+    dest.writeInt(this.servings);
+    dest.writeString(this.name);
+    dest.writeTypedList(this.ingredients);
+    dest.writeInt(this.id);
+    dest.writeTypedList(this.steps);
   }
 }

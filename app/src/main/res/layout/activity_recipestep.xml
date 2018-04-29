@@ -4,10 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".features.recipedetail.RecipeDetailActivity">
+    tools:context=".features.recipestep.RecipeStepActivity">
 
     <include layout="@layout/include_appbar" />
 
-    <include layout="@layout/recipe_detail_list" />
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/item_detail_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </LinearLayout>

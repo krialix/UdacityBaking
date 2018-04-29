@@ -23,12 +23,17 @@
         </activity>
         <activity
             android:name=".features.recipedetail.RecipeDetailActivity"
-            android:label="@string/title_recipe_detail"
+            android:label="@string/title_activity_recipe_detail"
             android:parentActivityName=".features.recipelist.RecipeListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".features.recipelist.RecipeListActivity" />
+                android:value="com.udacity.udacitybaking.features.recipelist.RecipeListActivity" />
+        </activity>
+        <activity android:name=".features.recipestep.RecipeStepActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity" />
         </activity>
     </application>
 

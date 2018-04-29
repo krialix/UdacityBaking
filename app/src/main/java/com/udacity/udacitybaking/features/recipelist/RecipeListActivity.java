@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.udacity.udacitybaking.OnItemClickListener;
 import com.udacity.udacitybaking.R;
+import com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity;
 import com.udacity.udacitybaking.model.Recipe;
 
 import butterknife.BindView;
@@ -70,13 +71,11 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
 
     rvRecipeList.setAdapter(adapter);
     rvRecipeList.setItemAnimator(new DefaultItemAnimator());
-    rvRecipeList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-    rvRecipeList.setLayoutManager(new LinearLayoutManager(this));
   }
 
   @Override
   public void onItemClick(Recipe item) {
-
+    RecipeDetailActivity.start(this, item);
   }
 
   static class RecipesAdapter extends ListAdapter<Recipe, RecipesAdapter.ViewHolder> {
@@ -105,7 +104,7 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
       View view =
           LayoutInflater.from(parent.getContext())
-              .inflate(R.layout.recipe_list_content, parent, false);
+              .inflate(R.layout.item_recipe_list, parent, false);
       return new ViewHolder(view);
     }
 
