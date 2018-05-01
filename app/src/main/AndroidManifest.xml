@@ -30,7 +30,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.udacity.udacitybaking.features.recipelist.RecipeListActivity" />
         </activity>
-        <activity android:name=".features.recipestep.RecipeStepActivity">
+        <activity android:name=".features.recipestep.RecipeStepActivity"
+            android:parentActivityName=".features.recipedetail.RecipeDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity" />

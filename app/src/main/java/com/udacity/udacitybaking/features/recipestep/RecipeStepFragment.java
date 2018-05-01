@@ -26,10 +26,13 @@ import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.udacity.udacitybaking.R;
@@ -48,6 +51,8 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
   private static final String EXTRA_DESCRIPTION_ID = "EXTRA_DESCRIPTION_ID";
   private static final String EXTRA_VIDEO_URL_ID = "EXTRA_VIDEO_URL_ID";
   private static final String EXTRA_IMAGE_URL_ID = "EXTRA_IMAGE_URL_ID";
+
+  private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
   @BindView(R.id.recipe_step_desc_card)
   CardView descriptionCard;
@@ -198,9 +203,12 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
   }
 
   private void initializePlayer(Uri mediaUri) {
-    if (exoPlayer == null) {
+    boolean needNewPlayer = exoPlayer == null;
+    if (needNewPlayer) {
+      TrackSelection.Factory adaptiveTrackSelectionFactory =
+          new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
+      TrackSelector trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
 
-      TrackSelector trackSelector = new DefaultTrackSelector();
       exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
       exoPlayerView.setPlayer(exoPlayer);
       exoPlayer.addListener(this);
