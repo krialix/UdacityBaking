@@ -5,5 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:foreground="?attr/selectableItemBackground"
-    android:padding="16dp"
+    android:padding="@dimen/spacing_16"
     tools:text="Step 1" />

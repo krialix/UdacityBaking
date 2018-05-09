@@ -1,5 +1,7 @@
 package com.udacity.udacitybaking.features.recipedetail;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,14 +20,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.udacity.udacitybaking.OnItemClickListener;
+import com.udacity.udacitybaking.BakingApp;
 import com.udacity.udacitybaking.R;
+import com.udacity.udacitybaking.data.model.Ingredient;
+import com.udacity.udacitybaking.data.model.Recipe;
+import com.udacity.udacitybaking.data.model.Step;
 import com.udacity.udacitybaking.features.recipelist.RecipeListActivity;
 import com.udacity.udacitybaking.features.recipestep.RecipeStepActivity;
 import com.udacity.udacitybaking.features.recipestep.RecipeStepFragment;
-import com.udacity.udacitybaking.model.Ingredient;
-import com.udacity.udacitybaking.model.Recipe;
-import com.udacity.udacitybaking.model.Step;
+import com.udacity.udacitybaking.features.widget.IngredientListWidgetProvider;
+import com.udacity.udacitybaking.util.OnItemClickListener;
 import com.udacity.udacitybaking.util.StringUtil;
 
 import java.util.List;
@@ -35,7 +39,7 @@ import butterknife.ButterKnife;
 
 public class RecipeDetailActivity extends AppCompatActivity implements OnItemClickListener<Step> {
 
-  private static final String KEY_RECIPE = "RECIPE";
+  public static final String KEY_RECIPE = "RECIPE";
 
   @BindView(R.id.toolbar)
   Toolbar toolbar;
@@ -67,25 +71,25 @@ public class RecipeDetailActivity extends AppCompatActivity implements OnItemCli
     setContentView(R.layout.activity_recipe_detail);
     ButterKnife.bind(this);
 
-    if (container != null) {
-      twoPane = true;
-    }
-
-    recipe = getIntent().getParcelableExtra(KEY_RECIPE);
-    setupToolbar(recipe.getName());
-
-    setIngredients(recipe);
+    twoPane = container != null;
 
     setupRecyclerView();
+
+    recipe = getIntent().getParcelableExtra(KEY_RECIPE);
+
+    saveRecipe(recipe);
+
+    setupToolbar(recipe.getName());
+
+    setIngredients(recipe.getIngredients());
+
     adapter.submitList(recipe.getSteps());
   }
 
-  private void setIngredients(Recipe recipe) {
-    List<Ingredient> ingredients = recipe.getIngredients();
-
+  private void setIngredients(List<Ingredient> ingredients) {
     StringBuilder sb = new StringBuilder();
     for (Ingredient ingredient : ingredients) {
-      sb.append("- ").append(StringUtil.toCapitalize(ingredient.getIngredient())).append("\n");
+      sb.append("- ").append(StringUtil.capitalize(ingredient.getIngredient())).append("\n");
     }
 
     tvIngredients.setText(sb.toString());
@@ -111,7 +115,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements OnItemCli
 
       getSupportFragmentManager()
           .beginTransaction()
-          .add(R.id.item_detail_container, fragment)
+          .replace(R.id.item_detail_container, fragment)
           .commit();
     } else {
       RecipeStepActivity.start(this, recipe.getName(), item);
@@ -140,6 +144,20 @@ public class RecipeDetailActivity extends AppCompatActivity implements OnItemCli
       return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  private void saveRecipe(Recipe recipe) {
+    BakingApp.LOCAL_RECIPE_STORE.setLastAccessedRecipe(recipe);
+
+    updateWidget();
+  }
+
+  private void updateWidget() {
+    int[] ids =
+        AppWidgetManager.getInstance(this)
+            .getAppWidgetIds(new ComponentName(this, IngredientListWidgetProvider.class));
+    IngredientListWidgetProvider bakingAppWidget = new IngredientListWidgetProvider();
+    bakingAppWidget.onUpdate(this, AppWidgetManager.getInstance(this), ids);
   }
 
   static class StepAdapter extends ListAdapter<Step, StepAdapter.ViewHolder> {
@@ -185,16 +203,13 @@ public class RecipeDetailActivity extends AppCompatActivity implements OnItemCli
       @BindView(R.id.tv_recipe_step)
       TextView tvName;
 
-      private View view;
-
       ViewHolder(View view) {
         super(view);
-        this.view = itemView;
         ButterKnife.bind(this, view);
       }
 
       void bindTo(Step step, OnItemClickListener<Step> onItemClickListener) {
-        view.setOnClickListener(v -> onItemClickListener.onItemClick(step));
+        tvName.setOnClickListener(v -> onItemClickListener.onItemClick(step));
 
         tvName.setText(step.getShortDescription());
       }

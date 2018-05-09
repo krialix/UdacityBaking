@@ -4,37 +4,43 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+import android.support.test.espresso.IdlingResource;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.recyclerview.extensions.ListAdapter;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.udacity.udacitybaking.OnItemClickListener;
+import com.udacity.udacitybaking.util.OnItemClickListener;
 import com.udacity.udacitybaking.R;
 import com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity;
-import com.udacity.udacitybaking.model.Recipe;
+import com.udacity.udacitybaking.idlingresource.RecipeListIdlingResource;
+import com.udacity.udacitybaking.data.model.Recipe;
 
+import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class RecipeListActivity extends AppCompatActivity implements OnItemClickListener<Recipe> {
 
-  private static final String TAG = "RecipeListActivity";
-
   @BindView(R.id.rv_recipe_list)
   RecyclerView rvRecipeList;
 
+  @BindBool(R.bool.two_pane_mode)
+  boolean isTwoPane;
+
   private RecipesAdapter adapter;
+
+  @Nullable private RecipeListIdlingResource idlingResource;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +48,7 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
     setContentView(R.layout.activity_recipe_list);
     ButterKnife.bind(this);
 
-    Toolbar toolbar = findViewById(R.id.toolbar);
-    setSupportActionBar(toolbar);
-    toolbar.setTitle(getTitle());
+    setupToolbar();
 
     setupRecyclerView();
 
@@ -58,16 +62,25 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
                 if (resource.isSuccess()) {
                   adapter.submitList(resource.getResource());
                 } else {
-                  Log.d(TAG, "onCreate: " + resource.getError());
                   Toast.makeText(this, resource.getError().getMessage(), Toast.LENGTH_SHORT).show();
                 }
               }
             });
   }
 
+  private void setupToolbar() {
+    Toolbar toolbar = findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+    toolbar.setTitle(getTitle());
+  }
+
   private void setupRecyclerView() {
     adapter = new RecipesAdapter();
     adapter.setOnItemClickListener(this);
+
+    int spanCount = isTwoPane ? 3 : 1;
+    GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
+    rvRecipeList.setLayoutManager(layoutManager);
 
     rvRecipeList.setAdapter(adapter);
     rvRecipeList.setItemAnimator(new DefaultItemAnimator());
@@ -76,6 +89,15 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
   @Override
   public void onItemClick(Recipe item) {
     RecipeDetailActivity.start(this, item);
+  }
+
+  @VisibleForTesting
+  @NonNull
+  public IdlingResource getIdlingResource() {
+    if (idlingResource == null) {
+      idlingResource = new RecipeListIdlingResource();
+    }
+    return idlingResource;
   }
 
   static class RecipesAdapter extends ListAdapter<Recipe, RecipesAdapter.ViewHolder> {

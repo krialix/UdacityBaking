@@ -1,4 +1,4 @@
-package com.udacity.udacitybaking.model;
+package com.udacity.udacitybaking.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

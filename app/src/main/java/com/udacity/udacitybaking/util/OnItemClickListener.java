@@ -1,4 +1,4 @@
-package com.udacity.udacitybaking;
+package com.udacity.udacitybaking.util;
 
 public interface OnItemClickListener<T> {
 

@@ -1,8 +1,18 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">UdacityBaking</string>
     <string name="title_recipe_detail">Recipe Detail</string>
 
     <string name="ingredient_count">%1$d ingredients</string>
     <string name="serving_count">%1$d servings</string>
     <string name="title_activity_recipe_detail">RecipeDetailActivity</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+
+    <string name="recipe_details_ingredients_header"><b>Ingredients list:</b></string>
+    <string name="recipe_details_ingredient_line" translatable="false">
+    <xliff:g id="bullet">\u2022</xliff:g> <xliff:g id="name">%s</xliff:g>
+    (<xliff:g id="quantity">%s</xliff:g> <xliff:g id="measure">%s</xliff:g>)
+  </string>
+    <string name="overview_ingredients_title">Ingredients</string>
+    <string name="recipe_detail_steps">Steps</string>
 </resources>

@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.widget.CardView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,20 +17,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -44,13 +40,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class RecipeStepFragment extends Fragment implements Player.EventListener {
+public class RecipeStepFragment extends Fragment {
 
   private static final String TAG = "RecipeStepFragment";
 
-  private static final String EXTRA_DESCRIPTION_ID = "EXTRA_DESCRIPTION_ID";
-  private static final String EXTRA_VIDEO_URL_ID = "EXTRA_VIDEO_URL_ID";
-  private static final String EXTRA_IMAGE_URL_ID = "EXTRA_IMAGE_URL_ID";
+  private static final String EXTRA_DESCRIPTION = "EXTRA_DESCRIPTION";
+  private static final String EXTRA_VIDEO_URL = "EXTRA_VIDEO_URL";
+  private static final String EXTRA_IMAGE_URL = "EXTRA_IMAGE_URL";
 
   private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
@@ -80,9 +76,9 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
   public static RecipeStepFragment newInstance(
       String description, String videoUrl, String imageUrl) {
     Bundle arguments = new Bundle();
-    arguments.putString(EXTRA_DESCRIPTION_ID, description);
-    arguments.putString(EXTRA_VIDEO_URL_ID, videoUrl);
-    arguments.putString(EXTRA_IMAGE_URL_ID, imageUrl);
+    arguments.putString(EXTRA_DESCRIPTION, description);
+    arguments.putString(EXTRA_VIDEO_URL, videoUrl);
+    arguments.putString(EXTRA_IMAGE_URL, imageUrl);
     RecipeStepFragment fragment = new RecipeStepFragment();
     fragment.setArguments(arguments);
     return fragment;
@@ -105,12 +101,12 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     Bundle args = getArguments();
 
-    String description = args.getString(EXTRA_DESCRIPTION_ID);
+    String description = args.getString(EXTRA_DESCRIPTION);
     descTextView.setText(description);
 
-    String imageUrl = args.getString(EXTRA_IMAGE_URL_ID);
+    String imageUrl = args.getString(EXTRA_IMAGE_URL);
 
-    if (imageUrl != null && !imageUrl.isEmpty()) {
+    if (!TextUtils.isEmpty(imageUrl)) {
       Glide.with(this).load(imageUrl).into(stepThumbnail);
       stepThumbnail.setVisibility(View.VISIBLE);
     } else {
@@ -118,9 +114,9 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     }
 
     final int orientation = getResources().getConfiguration().orientation;
-    String video = args.getString(EXTRA_VIDEO_URL_ID);
+    String video = args.getString(EXTRA_VIDEO_URL);
 
-    if (video != null && !video.isEmpty()) {
+    if (!TextUtils.isEmpty(video)) {
       exoPlayerView.setVisibility(View.VISIBLE);
       initializeMediaSession();
       initializePlayer(Uri.parse(video));
@@ -211,7 +207,20 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
       exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
       exoPlayerView.setPlayer(exoPlayer);
-      exoPlayer.addListener(this);
+      exoPlayer.addListener(
+          new Player.DefaultEventListener() {
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+              if ((playbackState == Player.STATE_READY) && playWhenReady) {
+                stateBuilder.setState(
+                    PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), 1f);
+              } else if (playbackState == Player.STATE_READY) {
+                stateBuilder.setState(
+                    PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), 1f);
+              }
+              mediaSession.setPlaybackState(stateBuilder.build());
+            }
+          });
 
       String userAgent = Util.getUserAgent(getContext(), "StepVideo");
 
@@ -238,41 +247,4 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
       mediaSession.setActive(false);
     }
   }
-
-  @Override
-  public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {}
-
-  @Override
-  public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {}
-
-  @Override
-  public void onLoadingChanged(boolean isLoading) {}
-
-  @Override
-  public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-    if ((playbackState == Player.STATE_READY) && playWhenReady) {
-      stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), 1f);
-    } else if (playbackState == Player.STATE_READY) {
-      stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), 1f);
-    }
-    mediaSession.setPlaybackState(stateBuilder.build());
-  }
-
-  @Override
-  public void onRepeatModeChanged(int repeatMode) {}
-
-  @Override
-  public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {}
-
-  @Override
-  public void onPlayerError(ExoPlaybackException error) {}
-
-  @Override
-  public void onPositionDiscontinuity(int reason) {}
-
-  @Override
-  public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {}
-
-  @Override
-  public void onSeekProcessed() {}
 }

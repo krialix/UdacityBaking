@@ -1,9 +1,9 @@
-package com.udacity.udacitybaking.network;
+package com.udacity.udacitybaking.data.network;
 
 import android.arch.lifecycle.LiveData;
 
 import com.github.leonardoxh.livedatacalladapter.Resource;
-import com.udacity.udacitybaking.model.Recipe;
+import com.udacity.udacitybaking.data.model.Recipe;
 
 import java.util.List;
 

@@ -4,8 +4,8 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModel;
 
 import com.github.leonardoxh.livedatacalladapter.Resource;
-import com.udacity.udacitybaking.model.Recipe;
-import com.udacity.udacitybaking.network.BakingClient;
+import com.udacity.udacitybaking.data.model.Recipe;
+import com.udacity.udacitybaking.data.network.BakingClient;
 
 import java.util.List;
 

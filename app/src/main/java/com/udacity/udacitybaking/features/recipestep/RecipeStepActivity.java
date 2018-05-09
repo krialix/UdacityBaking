@@ -10,7 +10,7 @@ import android.view.MenuItem;
 
 import com.udacity.udacitybaking.R;
 import com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity;
-import com.udacity.udacitybaking.model.Step;
+import com.udacity.udacitybaking.data.model.Step;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,7 +47,7 @@ public class RecipeStepActivity extends AppCompatActivity {
 
       getSupportFragmentManager()
           .beginTransaction()
-          .add(R.id.item_detail_container, fragment)
+          .replace(R.id.item_detail_container, fragment)
           .commit();
     }
   }

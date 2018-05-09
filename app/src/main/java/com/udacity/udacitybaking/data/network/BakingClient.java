@@ -1,4 +1,4 @@
-package com.udacity.udacitybaking.network;
+package com.udacity.udacitybaking.data.network;
 
 import com.github.leonardoxh.livedatacalladapter.LiveDataCallAdapterFactory;
 import com.github.leonardoxh.livedatacalladapter.LiveDataResponseBodyConverterFactory;
