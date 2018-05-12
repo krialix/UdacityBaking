@@ -4,13 +4,13 @@ import android.support.test.espresso.IdlingResource;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RecipeListIdlingResource implements IdlingResource {
+public class DefaultIdlingResource implements IdlingResource {
 
   private final AtomicBoolean isIdleNow;
 
   private volatile ResourceCallback callback;
 
-  public RecipeListIdlingResource() {
+  public DefaultIdlingResource() {
     isIdleNow = new AtomicBoolean(true);
   }
 

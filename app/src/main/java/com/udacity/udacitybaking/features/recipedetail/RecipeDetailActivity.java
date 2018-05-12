@@ -51,7 +51,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements OnItemCli
   @BindView(R.id.item_detail_container)
   ViewGroup container;
 
-  @BindView(R.id.tv_ingredients)
+  @BindView(R.id.tv_ingredients_content)
   TextView tvIngredients;
 
   private boolean twoPane;
@@ -60,9 +60,9 @@ public class RecipeDetailActivity extends AppCompatActivity implements OnItemCli
   private Recipe recipe;
 
   public static void start(Context context, Recipe recipe) {
-    Intent starter = new Intent(context, RecipeDetailActivity.class);
-    starter.putExtra(KEY_RECIPE, recipe);
-    context.startActivity(starter);
+    Intent intent = new Intent(context, RecipeDetailActivity.class);
+    intent.putExtra(KEY_RECIPE, recipe);
+    context.startActivity(intent);
   }
 
   @Override

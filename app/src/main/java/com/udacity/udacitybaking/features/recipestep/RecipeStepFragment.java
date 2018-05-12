@@ -2,12 +2,11 @@ package com.udacity.udacitybaking.features.recipestep;
 
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -17,23 +16,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.udacity.udacitybaking.R;
-
-import java.util.Objects;
 
 import butterknife.BindBool;
 import butterknife.BindView;
@@ -48,7 +41,9 @@ public class RecipeStepFragment extends Fragment {
   private static final String EXTRA_VIDEO_URL = "EXTRA_VIDEO_URL";
   private static final String EXTRA_IMAGE_URL = "EXTRA_IMAGE_URL";
 
-  private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+  private static final String KEY_WINDOW = "window";
+  private static final String KEY_POSITION = "position";
+  private static final String KEY_AUTO_PLAY = "auto_play";
 
   @BindView(R.id.recipe_step_desc_card)
   CardView descriptionCard;
@@ -60,14 +55,18 @@ public class RecipeStepFragment extends Fragment {
   TextView descTextView;
 
   @BindView(R.id.recipe_step_video)
-  PlayerView exoPlayerView;
+  PlayerView playerView;
 
   @BindBool(R.bool.two_pane_mode)
   boolean isTwoPane;
 
-  private SimpleExoPlayer exoPlayer;
-  private MediaSessionCompat mediaSession;
-  private PlaybackStateCompat.Builder stateBuilder;
+  private SimpleExoPlayer player;
+
+  private Uri videoUri;
+
+  private boolean startAutoPlay;
+  private int startWindow;
+  private long startPosition;
 
   private Unbinder unbinder;
 
@@ -101,40 +100,94 @@ public class RecipeStepFragment extends Fragment {
 
     Bundle args = getArguments();
 
-    String description = args.getString(EXTRA_DESCRIPTION);
+    setDescription(args);
+    setStepThumbnail(args);
+
+    final String video = args.getString(EXTRA_VIDEO_URL);
+
+    if (!TextUtils.isEmpty(video)) {
+
+      if (savedInstanceState != null) {
+        startAutoPlay = savedInstanceState.getBoolean(KEY_AUTO_PLAY);
+        startWindow = savedInstanceState.getInt(KEY_WINDOW);
+        startPosition = savedInstanceState.getLong(KEY_POSITION);
+      } else {
+        clearStartPosition();
+      }
+
+      playerView.setVisibility(View.VISIBLE);
+
+      videoUri = Uri.parse(video);
+
+      final int orientation = getResources().getConfiguration().orientation;
+
+      if (orientation == Configuration.ORIENTATION_LANDSCAPE && !isTwoPane) {
+        hideSystemUI();
+        expandVideoView(playerView);
+        descriptionCard.setVisibility(View.GONE);
+      }
+    } else {
+      playerView.setVisibility(View.GONE);
+    }
+  }
+
+  private void setDescription(Bundle args) {
+    final String description = args.getString(EXTRA_DESCRIPTION, null);
     descTextView.setText(description);
+  }
 
+  private void setStepThumbnail(Bundle args) {
     String imageUrl = args.getString(EXTRA_IMAGE_URL);
-
     if (!TextUtils.isEmpty(imageUrl)) {
       Glide.with(this).load(imageUrl).into(stepThumbnail);
       stepThumbnail.setVisibility(View.VISIBLE);
     } else {
       stepThumbnail.setVisibility(View.GONE);
     }
+  }
 
-    final int orientation = getResources().getConfiguration().orientation;
-    String video = args.getString(EXTRA_VIDEO_URL);
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle outState) {
+    super.onSaveInstanceState(outState);
+    updateStartPosition();
 
-    if (!TextUtils.isEmpty(video)) {
-      exoPlayerView.setVisibility(View.VISIBLE);
-      initializeMediaSession();
-      initializePlayer(Uri.parse(video));
+    outState.putBoolean(KEY_AUTO_PLAY, startAutoPlay);
+    outState.putInt(KEY_WINDOW, startWindow);
+    outState.putLong(KEY_POSITION, startPosition);
+  }
 
-      if (orientation == Configuration.ORIENTATION_LANDSCAPE && !isTwoPane) {
-        expandVideoView(exoPlayerView);
-        descriptionCard.setVisibility(View.GONE);
-        hideSystemUI();
+  @Override
+  public void onStart() {
+    super.onStart();
+    if (Build.VERSION.SDK_INT > 23 && videoUri != null) {
+      initializePlayer(videoUri);
+    }
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    if (Build.VERSION.SDK_INT <= 23 || player == null) {
+      if (videoUri != null) {
+        initializePlayer(videoUri);
       }
-    } else {
-      exoPlayerView.setVisibility(View.GONE);
     }
   }
 
   @Override
   public void onPause() {
     super.onPause();
-    releasePlayer();
+    if (Build.VERSION.SDK_INT <= 23) {
+      releasePlayer();
+    }
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    if (Build.VERSION.SDK_INT > 23) {
+      releasePlayer();
+    }
   }
 
   @Override
@@ -143,108 +196,69 @@ public class RecipeStepFragment extends Fragment {
     unbinder.unbind();
   }
 
+  private void updateStartPosition() {
+    if (player != null) {
+      startAutoPlay = player.getPlayWhenReady();
+      startWindow = player.getCurrentWindowIndex();
+      startPosition = Math.max(0, player.getContentPosition());
+    }
+  }
+
+  private void clearStartPosition() {
+    startAutoPlay = true;
+    startWindow = C.INDEX_UNSET;
+    startPosition = C.TIME_UNSET;
+  }
+
   private void expandVideoView(PlayerView exoPlayer) {
     exoPlayer.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
     exoPlayer.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
   }
 
   private void hideSystemUI() {
-    Objects.requireNonNull(getActivity())
-        .getWindow()
-        .getDecorView()
-        .setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE);
-  }
-
-  private void initializeMediaSession() {
-    mediaSession = new MediaSessionCompat(getContext(), TAG);
-
-    mediaSession.setFlags(
-        MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-            | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-
-    mediaSession.setMediaButtonReceiver(null);
-    stateBuilder =
-        new PlaybackStateCompat.Builder()
-            .setActions(
-                PlaybackStateCompat.ACTION_PLAY
-                    | PlaybackStateCompat.ACTION_PAUSE
-                    | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                    | PlaybackStateCompat.ACTION_PLAY_PAUSE);
-
-    mediaSession.setPlaybackState(stateBuilder.build());
-    mediaSession.setCallback(
-        new MediaSessionCompat.Callback() {
-          @Override
-          public void onPlay() {
-            exoPlayer.setPlayWhenReady(true);
-          }
-
-          @Override
-          public void onPause() {
-            exoPlayer.setPlayWhenReady(false);
-          }
-
-          @Override
-          public void onSkipToPrevious() {
-            exoPlayer.seekTo(0);
-          }
-        });
-    mediaSession.setActive(true);
+    playerView.setSystemUiVisibility(
+        View.SYSTEM_UI_FLAG_LOW_PROFILE
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
   }
 
   private void initializePlayer(Uri mediaUri) {
-    boolean needNewPlayer = exoPlayer == null;
-    if (needNewPlayer) {
-      TrackSelection.Factory adaptiveTrackSelectionFactory =
-          new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
-      TrackSelector trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
+    player =
+        ExoPlayerFactory.newSimpleInstance(
+            new DefaultRenderersFactory(getContext()),
+            new DefaultTrackSelector(),
+            new DefaultLoadControl());
 
-      exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
-      exoPlayerView.setPlayer(exoPlayer);
-      exoPlayer.addListener(
-          new Player.DefaultEventListener() {
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-              if ((playbackState == Player.STATE_READY) && playWhenReady) {
-                stateBuilder.setState(
-                    PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), 1f);
-              } else if (playbackState == Player.STATE_READY) {
-                stateBuilder.setState(
-                    PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), 1f);
-              }
-              mediaSession.setPlaybackState(stateBuilder.build());
-            }
-          });
+    playerView.setPlayer(player);
 
-      String userAgent = Util.getUserAgent(getContext(), "StepVideo");
+    MediaSource mediaSource = buildMediaSource(mediaUri);
 
-      MediaSource mediaSource =
-          new ExtractorMediaSource(
-              mediaUri,
-              new DefaultDataSourceFactory(getContext(), userAgent),
-              new DefaultExtractorsFactory(),
-              null,
-              null);
-      exoPlayer.prepare(mediaSource);
-      exoPlayer.setPlayWhenReady(true);
+    boolean haveStartPosition = startWindow != C.INDEX_UNSET;
+    if (haveStartPosition) {
+      player.seekTo(startWindow, startPosition);
     }
+
+    player.prepare(mediaSource, !haveStartPosition, false);
+
+    player.setPlayWhenReady(true);
+  }
+
+  private ExtractorMediaSource buildMediaSource(Uri mediaUri) {
+    return new ExtractorMediaSource.Factory(new DefaultHttpDataSourceFactory("baking-app"))
+        .createMediaSource(mediaUri);
   }
 
   private void releasePlayer() {
-    if (exoPlayer != null) {
-      exoPlayer.stop();
-      exoPlayer.release();
-      exoPlayer = null;
-    }
-
-    if (mediaSession != null) {
-      mediaSession.setActive(false);
+    if (player != null) {
+      updateStartPosition();
+      startPosition = player.getCurrentPosition();
+      startWindow = player.getCurrentWindowIndex();
+      startAutoPlay = player.getPlayWhenReady();
+      player.release();
+      player = null;
     }
   }
 }

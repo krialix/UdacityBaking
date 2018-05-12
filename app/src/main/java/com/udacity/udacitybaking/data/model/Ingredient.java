@@ -22,8 +22,10 @@ public class Ingredient implements Parcelable {
 
   @Json(name = "quantity")
   private float quantity;
+
   @Json(name = "measure")
   private String measure;
+
   @Json(name = "ingredient")
   private String ingredient;
 

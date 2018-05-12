@@ -42,7 +42,7 @@ public class RecipeListActivityUITest {
     onView(withId(R.id.rv_recipe_list))
         .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
 
-    onView(withId(R.id.tv_ingredients)).check(matches(isDisplayed()));
+    onView(withId(R.id.tv_ingredients_content)).check(matches(isDisplayed()));
   }
 
   @After

@@ -23,7 +23,7 @@ import android.widget.Toast;
 import com.udacity.udacitybaking.util.OnItemClickListener;
 import com.udacity.udacitybaking.R;
 import com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity;
-import com.udacity.udacitybaking.idlingresource.RecipeListIdlingResource;
+import com.udacity.udacitybaking.idlingresource.DefaultIdlingResource;
 import com.udacity.udacitybaking.data.model.Recipe;
 
 import butterknife.BindBool;
@@ -40,7 +40,7 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
 
   private RecipesAdapter adapter;
 
-  @Nullable private RecipeListIdlingResource idlingResource;
+  @Nullable private DefaultIdlingResource idlingResource;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +95,7 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
   @NonNull
   public IdlingResource getIdlingResource() {
     if (idlingResource == null) {
-      idlingResource = new RecipeListIdlingResource();
+      idlingResource = new DefaultIdlingResource();
     }
     return idlingResource;
   }
