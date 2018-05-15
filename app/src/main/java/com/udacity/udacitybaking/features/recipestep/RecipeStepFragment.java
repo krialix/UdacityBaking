@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -139,7 +140,10 @@ public class RecipeStepFragment extends Fragment {
   private void setStepThumbnail(Bundle args) {
     String imageUrl = args.getString(EXTRA_IMAGE_URL);
     if (!TextUtils.isEmpty(imageUrl)) {
-      Glide.with(this).load(imageUrl).into(stepThumbnail);
+      Glide.with(this)
+          .load(imageUrl)
+          .apply(RequestOptions.placeholderOf(R.drawable.chef))
+          .into(stepThumbnail);
       stepThumbnail.setVisibility(View.VISIBLE);
     } else {
       stepThumbnail.setVisibility(View.GONE);
@@ -243,7 +247,7 @@ public class RecipeStepFragment extends Fragment {
 
     player.prepare(mediaSource, !haveStartPosition, false);
 
-    player.setPlayWhenReady(true);
+    player.setPlayWhenReady(startAutoPlay);
   }
 
   private ExtractorMediaSource buildMediaSource(Uri mediaUri) {

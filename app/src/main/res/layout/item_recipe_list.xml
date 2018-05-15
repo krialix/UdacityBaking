@@ -18,16 +18,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <ImageView
+            android:id="@+id/iv_recipe_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/recipe_image"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/chef" />
+
         <TextView
             android:id="@+id/tv_recipe_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawablePadding="@dimen/spacing_16"
-            android:drawableStart="@drawable/chef"
+            android:layout_marginStart="@dimen/spacing_16"
             android:gravity="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_recipe_image"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Nutella Pie" />
 

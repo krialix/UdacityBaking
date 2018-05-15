@@ -17,14 +17,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.udacity.udacitybaking.util.OnItemClickListener;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.udacity.udacitybaking.R;
+import com.udacity.udacitybaking.data.model.Recipe;
 import com.udacity.udacitybaking.features.recipedetail.RecipeDetailActivity;
 import com.udacity.udacitybaking.idlingresource.DefaultIdlingResource;
-import com.udacity.udacitybaking.data.model.Recipe;
+import com.udacity.udacitybaking.util.OnItemClickListener;
 
 import butterknife.BindBool;
 import butterknife.BindView;
@@ -140,6 +143,9 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+      @BindView(R.id.iv_recipe_image)
+      ImageView ivRecipe;
+
       @BindView(R.id.tv_recipe_name)
       TextView tvName;
 
@@ -159,6 +165,11 @@ public class RecipeListActivity extends AppCompatActivity implements OnItemClick
 
       void bindTo(Recipe recipe, OnItemClickListener<Recipe> onItemClickListener) {
         view.setOnClickListener(v -> onItemClickListener.onItemClick(recipe));
+
+        Glide.with(view.getContext())
+            .load(recipe.getImage())
+            .apply(RequestOptions.placeholderOf(R.drawable.chef))
+            .into(ivRecipe);
 
         Resources resources = tvName.getResources();
         tvName.setText(recipe.getName());

@@ -15,4 +15,5 @@
   </string>
     <string name="overview_ingredients_title">Ingredients</string>
     <string name="recipe_detail_steps">Steps</string>
+    <string name="recipe_image">recipe image</string>
 </resources>
